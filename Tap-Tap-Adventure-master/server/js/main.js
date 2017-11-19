@@ -10,6 +10,8 @@ var fs = require('fs'),
     worlds = [], database,
     Bot = require('../../tools/bot/bot');
 
+config.mysqlHost = process.env.MYSQL_PORT_3306_TCP_ADDR;
+config.mysqlPort = process.env.MYSQL_PORT_3306_TCP_PORT;
 var worldsCreated = 0;
 
 log = new Log(config.worlds > 1 ? 'notice' : config.debugLevel, config.localDebug ? fs.createWriteStream('runtime.log') : null);
