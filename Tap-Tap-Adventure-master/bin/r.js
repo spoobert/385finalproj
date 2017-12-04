@@ -1192,7 +1192,7 @@ var requirejs, require, define, xpcUtil;
             callPlugin: function () {
                 var map = this.map,
                     id = map.id,
-                    //Map already normalized the prefix.
+                    //mMap already normalized the prefix.
                     pluginMap = makeModuleMap(map.prefix);
 
                 //Mark this as a dependency for this plugin, so it
@@ -26685,7 +26685,7 @@ define('build', function (require) {
     function flattenWrapFile(config, keyName, absFilePath) {
         var wrap = config.wrap,
             keyFileName = keyName + 'File',
-            keyMapName = '__' + keyName + 'Map';
+            keyMapName = '__' + keyName + 'mMap';
 
         if (typeof wrap[keyName] !== 'string' && wrap[keyFileName]) {
             wrap[keyName] = '';

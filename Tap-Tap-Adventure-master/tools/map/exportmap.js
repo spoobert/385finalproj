@@ -35,7 +35,7 @@ function parseClient(data, destination) {
         if (err)
             log.error(JSON.stringify(err));
         else
-            log.info('[Client] Map saved at: ' + destination + '.json');
+            log.info('[Client] mMap saved at: ' + destination + '.json');
     });
 
     map = 'var mapData = ' + map;
@@ -44,7 +44,7 @@ function parseClient(data, destination) {
         if (err)
             log.error(JSON.stringify(err));
         else
-            log.info('[Client] Map saved at: ' + destination + '.js');
+            log.info('[Client] mMap saved at: ' + destination + '.js');
     });
 }
 
@@ -57,7 +57,7 @@ function parseServer(data, destination) {
         if (err)
             log.error(JSON.stringify(err));
         else
-            log.info('[Server] Map saved at: ' + destination + '.json');
+            log.info('[Server] mMap saved at: ' + destination + '.json');
     });
 }
 
