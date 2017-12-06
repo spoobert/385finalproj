@@ -1,6 +1,6 @@
 var cls = require('../../server/js/lib/class'),
     Player = require('../../server/js/game/entity/character/player/player'),
-    Creator = require('../../server/js/database/creator'),
+    Creator = require('../../server/js/database/spannerCreator'), // TODO:
     Utils = require('../../server/js/util/utils'),
     _ = require('underscore');
 

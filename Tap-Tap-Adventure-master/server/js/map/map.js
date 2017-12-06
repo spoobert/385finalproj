@@ -13,7 +13,7 @@ var cls = require('../lib/class'),
     ChestAreas = require('./areas/chestareas'),
     Grids = require('./grids');
 
-module.exports = Map = cls.Class.extend({
+module.exports = mMap = cls.Class.extend({
 
     init: function(world) {
 

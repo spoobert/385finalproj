@@ -167,7 +167,7 @@ define(['./renderer/renderer', './utils/storage',
         loadMap: function() {
             var self = this;
 
-            self.map = new Map(self);
+            self.map = new mMap(self);
 
             self.map.onReady(function() {
 

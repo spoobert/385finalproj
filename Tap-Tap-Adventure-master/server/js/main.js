@@ -1,6 +1,6 @@
 var fs = require('fs'),
     config = require('../config.json'),
-    MySQL = require('./database/mysql'),
+    GoogleSpanner = require('./database/spanner'), // TODO:
     WebSocket = require('./network/websocket'),
     _ = require('underscore'),
     allowConnections = false,
@@ -26,7 +26,8 @@ function Main() {
         webSocket = new WebSocket.Server(config.host, config.port, config.gver);
 
     if (!config.offlineMode)
-        database = new MySQL(config.mysqlHost, config.mysqlPort, config.mysqlUser, config.mysqlPassword, config.mysqlDatabase);
+        database = new GoogleSpanner(config.gCloudProjectId, config.spannerInstance, config.spannerDatabase);
+        //database = new MySQL(config.mysqlHost, config.mysqlPort, config.mysqlUser, config.mysqlPassword, config.mysqlDatabase);
 
     webSocket.onConnect(function(connection) {
         if (!allowConnections) {

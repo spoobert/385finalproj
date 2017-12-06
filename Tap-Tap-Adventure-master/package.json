@@ -15,7 +15,7 @@
     "log": "^1.4.0",
     "memcache": "^0.3.0",
     "mongodb": "^2.2.26",
-    "mysql": "^2.13.0",
+    "@google-cloud/spanner": "^0.8.1",
     "redis": "^2.7.1",
     "request": "^2.81.0",
     "require": "^2.4.20",

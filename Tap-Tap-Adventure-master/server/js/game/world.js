@@ -107,7 +107,7 @@ module.exports = World = cls.Class.extend({
          * whatever new map we have created server sided. Cleaner and nicer.
          */
 
-        self.map = new Map(self);
+        self.map = new mMap(self);
         self.map.isReady(function() {
             self.loadGroups();
 
