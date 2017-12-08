@@ -4,64 +4,78 @@ var cls = require('../lib/class');
 
 module.exports = Creator = cls.Class.extend({
 
-	init: function(Database) {
+	init: function (Database)
+	{
 		var self = this;
-
-		self.projectId = projectId;
 
 		self.database = Database;
 	},
 
-	tableNotExists: function(tableName, ifNotExists) {
+	tableNotExists: function (tableName, ifNotExists)
+	{
 		var self = this,
 			exists = 0;
 
 		const query = {
-			sql: 'SELECT count(*) as count FROM INFORMATION_SCHEMA.TABLES WHERE (TABLE_SCHEMA = ' +self.database + ') AND (TABLE_NAME = ' + tableName + ')'
+			sql: 'SELECT count(*) as count FROM INFORMATION_SCHEMA.TABLES WHERE (TABLE_NAME = \'' + tableName + '\')'
 		};
 
-		self.database.run(query).then(function(results) {
-			// Results[0] should be the number of rows?
-			exists = results[0];
+		self.database.run(query).then(function (results)
+		{
+			// Results[0][0][0].value.value should be the number of rows
+			exists = results[0][0][0].value.value;
 
-			if(exists === 0)
+			if (parseInt(exists) === 0)
+			{
 				ifNotExists();
-
-		});
-/*
-		self.mysql.connection.query('SELECT count(*) as count FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)', [self.mysql.database, tableName], function (err, rows) {
-			if (err) {
-				log.error(err);
-				throw err;
 			}
 
-			exists = rows[0].count;
-
-			if (exists === 0)
-				ifNotExists();
-
+		}).catch(function (err)
+		{
+			log.error(err);
 		});
-*/
+		/*
+		 self.mysql.connection.query('SELECT count(*) as count FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)', [self.mysql.database, tableName], function (err, rows) {
+		 if (err) {
+		 log.error(err);
+		 throw err;
+		 }
+
+		 exists = rows[0].count;
+
+		 if (exists === 0)
+		 ifNotExists();
+
+		 });
+		 */
 	},
 
-	createTables: function() {
+	createTables: function ()
+	{
 		var self = this;
 
-		function handleError(tableName) {
-			return function(error) {
-				if (error) {
+		function handleError(tableName)
+		{
+			return function (error)
+			{
+				if (error)
+				{
 					log.error('[GoogleSpanner] Failed to created table ' + tableName + ' : ' + error);
 					throw error;
-				} else
+				}
+				else
+				{
 					log.info('[GoogleSpanner] Created table ' + tableName);
-			}
+				}
+			};
 		}
 
-		self.tableNotExists('player_data', function() {
-			const query = {
-				sql: 'CREATE TABLE player_data (' +
-				'username STRING,' +
-				'email STRING,' +
+		self.tableNotExists('player_data', function ()
+		{
+			const schema =
+				'CREATE TABLE player_data (' +
+				'username STRING(1024),' +
+				'email STRING(1024),' +
 				'x INT64,' +
 				'y INT64,' +
 				'experience INT64,' +
@@ -74,221 +88,264 @@ module.exports = Creator = cls.Class.extend({
 				'pvpDeaths INT64,' +
 				'rank INT64,' +
 				'ban INT64,' +
-				'mute STRING,' +
-				'membership STRING,' +
-				'lastLogin STRING,' +
-				'guild STRING,' +
-				'lastWarp STRING,' +
-				'PRIMARY KEY(username))'
-			};
+				'mute STRING(1024),' +
+				'membership STRING(1024),' +
+				'lastLogin STRING(1024),' +
+				'guild STRING(1024),' +
+				'lastWarp STRING(1024)' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
 					handleError('player_data');
-				});
+				}
 
-/*
-			self.mysql.connection.query('CREATE TABLE player_data (' +
-				'username varchar(64),' +
-				'email varchar(64),' +
-				'x int,' +
-				'y int,' +
-				'experience int,' +
-				'kind int,' +
-				'rights int,' +
-				'poisoned tinyint,' +
-				'hitPoints int,' +
-				'mana int,' +
-				'pvpKills int,' +
-				'pvpDeaths int,' +
-				'rank int,' +
-				'ban int(64),' +
-				'mute varchar(64),' +
-				'membership varchar(64),' +
-				'lastLogin varchar(64),' +
-				'guild varchar(64),' +
-				'lastWarp varchar(64),' +
-				'PRIMARY KEY(username))', handleError('player_data'));
-*/
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_data');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_data table created.');
+					});
+			});
 		});
 
-		self.tableNotExists('player_equipment', function() {
-			const query = {
-				sql: 'CREATE TABLE player_equipment (' +
-				'username STRING,' +
-				'armour STRING,' +
-				'weapon STRING,' +
-				'pendant STRING,' +
-				'ring STRING,' +
-				'boots STRING,' +
-				'PRIMARY KEY(username))'
-			};
+		self.tableNotExists('player_equipment', function ()
+		{
+			const schema =
+				'CREATE TABLE player_equipment (' +
+				'username STRING(1024),' +
+				'armour STRING(1024),' +
+				'weapon STRING(1024),' +
+				'pendant STRING(1024),' +
+				'ring STRING(1024),' +
+				'boots STRING(1024)' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_equipment');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_equipment');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_equipment');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_equipment table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_equipment (' +
-				'username varchar(64),' +
-				'armour varchar(64),' +
-				'weapon varchar(64),' +
-				'pendant varchar(64),' +
-				'ring varchar(64),' +
-				'boots varchar(64),' +
-				'PRIMARY KEY(username))',  handleError('player_equipment'))
-*/
 		});
 
-		self.tableNotExists('player_quests', function() {
-			const query = {
-				sql: 'CREATE TABLE player_quests (' +
-				'username STRING,' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'stages text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))'
-			};
+		self.tableNotExists('player_quests', function ()
+		{
+			const schema =
+				'CREATE TABLE player_quests (' +
+				'username STRING(1024),' +
+				'ids STRING(1024) NOT NULL,' +
+				'stages STRING(1024) NOT NULL' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_quests');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_quests');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_quests');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_quests table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_quests (' +
-				'username varchar(64),' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'stages text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))',  handleError('player_quests'))
-*/
 		});
 
-		self.tableNotExists('player_achievements', function() {
-			const query = {
-				sql: 'CREATE TABLE player_achievements (' +
-				'username STRING,' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'progress text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))'
-			};
+		self.tableNotExists('player_achievements', function ()
+		{
+			const schema =
+				'CREATE TABLE player_achievements (' +
+				'username STRING(1024),' +
+				'ids STRING(1024) NOT NULL,' +
+				'progress STRING(1024) NOT NULL' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_achievements');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_achievements');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_achievements');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_achievements table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_achievements (' +
-				'username varchar(64),' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'progress text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))',  handleError('player_achievements'))
-*/
 		});
 
-		self.tableNotExists('player_bank', function() {
-			const query = {
-				sql: 'CREATE TABLE player_bank (' +
-				'username STRING,' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'counts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))'
-			};
+		self.tableNotExists('player_bank', function ()
+		{
+			const schema =
+				'CREATE TABLE player_bank (' +
+				'username STRING(1024),' +
+				'ids STRING(1024) NOT NULL,' +
+				'counts STRING(1024) NOT NULL,' +
+				'abilities STRING(1024) NOT NULL,' +
+				'abilityLevels STRING(1024) NOT NULL' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_bank');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_bank');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_bank');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_bank table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_bank (' +
-				'username varchar(64),' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'counts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))', handleError('player_bank'))
-*/
 		});
 
-		self.tableNotExists('player_abilities', function() {
-			const query = {
-				sql: 'CREATE TABLE player_abilities (' +
-				'username STRING,' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'shortcuts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY (username))'
-			};
+		self.tableNotExists('player_abilities', function ()
+		{
+			const schema =
+				'CREATE TABLE player_abilities (' +
+				'username STRING(1024),' +
+				'abilities STRING(1024) NOT NULL,' +
+				'abilityLevels STRING(1024) NOT NULL,' +
+				'shortcuts STRING(1024) NOT NULL' +
+				') PRIMARY KEY (username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_abilities');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_abilities');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_abilities');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_abilities table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_abilities (' +
-				'username varchar(64),' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'shortcuts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY (username))', handleError('player_abilities'))
-*/
 		});
 
-		self.tableNotExists('player_inventory', function() {
-			const query = {
-				sql: 'CREATE TABLE player_inventory (' +
-				'username STRING,' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'counts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))'
-			};
+		self.tableNotExists('player_inventory', function ()
+		{
+			const schema =
+				'CREATE TABLE player_inventory (' +
+				'username STRING(1024),' +
+				'ids STRING(1024) NOT NULL,' +
+				'counts STRING(1024) NOT NULL,' +
+				'abilities STRING(1024) NOT NULL,' +
+				'abilityLevels STRING(1024) NOT NULL' +
+				') PRIMARY KEY(username)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('player_inventory');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('player_inventory');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('player_inventory');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] player_inventory table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE player_inventory (' +
-				'username varchar(64),' +
-				'ids text COLLATE utf8_unicode_ci NOT NULL,' +
-				'counts text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilities text COLLATE utf8_unicode_ci NOT NULL,' +
-				'abilityLevels text COLLATE utf8_unicode_ci NOT NULL,' +
-				'PRIMARY KEY(username))', handleError("player_inventory"))
-*/
 		});
 
-		self.tableNotExists('ipbans', function () {
-			const query = {
-				sql: 'CREATE TABLE IF NOT EXISTS ipbans (' +
-				'ip STRING,' +
-				'ipban INT64,' +
-				'PRIMARY KEY(ip))'
-			};
+		self.tableNotExists('ipbans', function ()
+		{
+			const schema =
+				'CREATE TABLE ipbans (' +
+				'ip STRING(1024),' +
+				'ipban INT64' +
+				') PRIMARY KEY(ip)';
 
-			self.database.run(query).then(function(results) {
-			}).catch(function(err) {
-				handleError('ipbans');
+			self.database.createTable(schema, function (err, table, operation, apiResponse)
+			{
+				if (err)
+				{
+					handleError('ipbans');
+				}
+
+				operation.promise();
+
+				operation
+					.on('error', function (err)
+					{
+						handleError('ipbans');
+					})
+					.on('complete', function ()
+					{
+						log.info('[GoogleSpanner] ipbans table created.');
+					});
 			});
-/*
-			self.mysql.connection.query('CREATE TABLE IF NOT EXISTS ipbans (' +
-				'ip varchar(64),' +
-				'ipban int(64),' +
-				'PRIMARY KEY(ip))', handleError('ipbans'))
-*/
 		});
 	},
 
-	save: function(player) {
+	save: function (player)
+	{
 		var self = this,
 			playerData = self.formatData(self.getPlayerData(player), 'data'),
 			equipmentData = self.formatData(self.getPlayerData(player), 'equipment');
 
-		var handleError = function (error) {
+		var handleError = function (error)
+		{
 			if (error)
+			{
 				log.error(error);
+			}
 		};
 
 		const playerDataTable = self.database.table('player_data');
@@ -300,103 +357,133 @@ module.exports = Creator = cls.Class.extend({
 		const playerAchievementsTable = self.database.table('player_achievements');
 
 		// TODO: This is malformed, will need to fix. Needs to be JSON, not a string
-		const playerDataQuery = [ playerData ];
-		const equipmentDataQuery = [ equipmentData ];
-		const playerInventoryQuery = { sql: '`player_inventory` SET ' + player.inventory.getArray() };
-		const playerAbilitiesQuery = { sql: '`player_abilities` SET ' + player.abilities.getArray() };
-		const playerBankQuery = { sql: '`player_bank` SET ' + player.bank.getArray() };
-		const playerQuestsQuery = { sql: '`player_quests` SET ' + player.quests.getQuests() };
-		const playerAchievementsQuery = { sql: '`player_achievements` SET ' + player.quests.getAchievements() };
+		const playerDataQuery = [playerData];
+		const equipmentDataQuery = [equipmentData];
+		const playerInventoryQuery = {sql: '`player_inventory` SET ' + player.inventory.getArray()};
+		const playerAbilitiesQuery = {sql: '`player_abilities` SET ' + player.abilities.getArray()};
+		const playerBankQuery = {sql: '`player_bank` SET ' + player.bank.getArray()};
+		const playerQuestsQuery = {sql: '`player_quests` SET ' + player.quests.getQuests()};
+		const playerAchievementsQuery = {sql: '`player_achievements` SET ' + player.quests.getAchievements()};
 
-		if(player.isNew)
+		if (player.isNew)
 		{
-			playerDataTable.insert(playerDataQuery).then(function(results) {
-			}).catch(function(err) {
+			playerDataTable.insert(playerDataQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerEquipmentTable.insert(equipmentDataQuery).then(function(results) {
-			}).catch(function(err) {
+			playerEquipmentTable.insert(equipmentDataQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerInventoryTable.insert(playerInventoryQuery).then(function(results) {
-			}).catch(function(err) {
+			playerInventoryTable.insert(playerInventoryQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerAbilitiesTable.insert(playerAbilitiesQuery).then(function(results) {
-			}).catch(function(err) {
+			playerAbilitiesTable.insert(playerAbilitiesQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerBankTable.insert(playerBankQuery).then(function(results) {
-			}).catch(function(err) {
+			playerBankTable.insert(playerBankQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerQuestsTable.insert(playerQuestsQuery).then(function(results) {
-			}).catch(function(err) {
+			playerQuestsTable.insert(playerQuestsQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerAchievementsTable.insert(playerAchievementsQuery).then(function(results) {
-			}).catch(function(err) {
+			playerAchievementsTable.insert(playerAchievementsQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 		}
 		else
 		{
-			playerDataTable.update(playerDataQuery).then(function(results) {
-			}).catch(function(err) {
+			playerDataTable.update(playerDataQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerEquipmentTable.update(equipmentDataQuery).then(function(results) {
-			}).catch(function(err) {
+			playerEquipmentTable.update(equipmentDataQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerInventoryTable.update(playerInventoryQuery).then(function(results) {
-			}).catch(function(err) {
+			playerInventoryTable.update(playerInventoryQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerAbilitiesTable.update(playerAbilitiesQuery).then(function(results) {
-			}).catch(function(err) {
+			playerAbilitiesTable.update(playerAbilitiesQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerBankTable.update(playerBankQuery).then(function(results) {
-			}).catch(function(err) {
+			playerBankTable.update(playerBankQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerQuestsTable.update(playerQuestsQuery).then(function(results) {
-			}).catch(function(err) {
+			playerQuestsTable.update(playerQuestsQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 
-			playerAchievementsTable.update(playerAchievementsQuery).then(function(results) {
-			}).catch(function(err) {
+			playerAchievementsTable.update(playerAchievementsQuery).then(function (results)
+			{
+			}).catch(function (err)
+			{
 				handleError(err);
 			});
 		}
-/*
-		self.mysql.connection.query(queryKey + ' `player_data` SET ?', playerData, handleError);
-		self.mysql.connection.query(queryKey + ' `player_equipment` SET ?', equipmentData, handleError);
-		self.mysql.connection.query(queryKey + ' `player_inventory` SET ?', player.inventory.getArray(), handleError);
-		self.mysql.connection.query(queryKey + ' `player_abilities` SET ?', player.abilities.getArray(), handleError);
-		self.mysql.connection.query(queryKey + ' `player_bank` SET ?', player.bank.getArray(), handleError);
-		self.mysql.connection.query(queryKey + ' `player_quests` SET ?', player.quests.getQuests(), handleError);
-		self.mysql.connection.query(queryKey + ' `player_achievements` SET ?', player.quests.getAchievements(), handleError);
-*/
+		/*
+		 self.mysql.connection.query(queryKey + ' `player_data` SET ?', playerData, handleError);
+		 self.mysql.connection.query(queryKey + ' `player_equipment` SET ?', equipmentData, handleError);
+		 self.mysql.connection.query(queryKey + ' `player_inventory` SET ?', player.inventory.getArray(), handleError);
+		 self.mysql.connection.query(queryKey + ' `player_abilities` SET ?', player.abilities.getArray(), handleError);
+		 self.mysql.connection.query(queryKey + ' `player_bank` SET ?', player.bank.getArray(), handleError);
+		 self.mysql.connection.query(queryKey + ' `player_quests` SET ?', player.quests.getQuests(), handleError);
+		 self.mysql.connection.query(queryKey + ' `player_achievements` SET ?', player.quests.getAchievements(), handleError);
+		 */
 	},
 
-	formatData: function(data, type) {
+	formatData: function (data, type)
+	{
 		var formattedData;
 
-		switch(type) {
+		switch (type)
+		{
 			case 'data':
 				formattedData = {
 					username: data.username,
@@ -438,7 +525,8 @@ module.exports = Creator = cls.Class.extend({
 		return formattedData;
 	},
 
-	getPlayerData: function(player) {
+	getPlayerData: function (player)
+	{
 		return {
 			username: player.username,
 			email: player.email ? player.email : 'null',
@@ -464,7 +552,7 @@ module.exports = Creator = cls.Class.extend({
 			pendant: [player.pendant ? player.pendant.getId() : -1, player.pendant ? player.pendant.getCount() : 0, player.pendant ? player.pendant.getAbility() : 0, player.pendant ? player.pendant.getAbilityLevel() : 0],
 			ring: [player.ring ? player.ring.getId() : -1, player.ring ? player.ring.getCount() : 0, player.ring ? player.ring.getAbility() : 0, player.ring ? player.ring.getAbilityLevel() : 0],
 			boots: [player.boots ? player.boots.getId() : -1, player.boots ? player.boots.getCount() : 0, player.boots ? player.boots.getAbility() : 0, player.boots ? player.boots.getAbilityLevel() : 0]
-		}
+		};
 	}
 
 });

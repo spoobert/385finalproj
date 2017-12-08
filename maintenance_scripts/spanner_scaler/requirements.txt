@@ -1,0 +1,2 @@
+google-cloud-spanner==0.29.0
+pykafka==2.6.0

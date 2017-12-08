@@ -8,11 +8,9 @@
   "development": false,
   "overrideAuth": false,
 
-  "mysqlHost": "127.0.0.1",
-  "mysqlPort": 3306,
-  "mysqlUser": "root",
-  "mysqlPassword": "t9bvjEaerP",
-  "mysqlDatabase": "ttadb",
+  "gCloudProjectId" : "<GOOGLE_CLOUD_PROJECT_ID>",
+  "spannerInstance": "<GOOGLE_SPANNER_INSTANCE_NAME>",
+  "spannerDatabase": "<DATABASE_NAME>",
 
   "debugLevel": "info",
   "localDebug": false,

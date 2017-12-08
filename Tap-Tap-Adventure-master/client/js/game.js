@@ -7,7 +7,7 @@ define(['./renderer/renderer', './utils/storage',
         './controllers/zoning', './controllers/info', './controllers/bubble',
         './controllers/interface', './controllers/audio', './controllers/pointer',
         './utils/modules', './network/packets'],
-        function(Renderer, LocalStorage, Map, Socket, Player, Updater,
+        function(Renderer, LocalStorage, GameMap, Socket, Player, Updater,
                  Entities, Input, PlayerHandler, Pathfinder, Zoning, Info, Bubble, Interface, Audio, Pointer) {
 
     return Class.extend({
@@ -167,7 +167,7 @@ define(['./renderer/renderer', './utils/storage',
         loadMap: function() {
             var self = this;
 
-            self.map = new mMap(self);
+            self.map = new GameMap(self);
 
             self.map.onReady(function() {
 

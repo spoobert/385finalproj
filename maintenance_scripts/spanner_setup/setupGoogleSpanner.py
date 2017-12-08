@@ -8,8 +8,8 @@ from google.cloud import spanner
 # This script will try to create the GoogleSpanner instance and database if
 # they do not already exist.
 
-instance_name = "<SPANNER_INSTANCE_NAME_HERE>"
-db_name = "<DATABASE_NAME_HERE>"
+instance_name = "<SPANNER_INSTANCE_ID_HERE>"
+db_name = "<DATABASE_ID_HERE>"
 region = "<INSTANCE_LOCATION_HERE>" # Available regions can be found at
 									# https://cloud.google.com/spanner/docs/instances#available-configurations-regional
 									# eg us-central1
@@ -42,7 +42,7 @@ if(not foundInstance):
 	instance = spanner_client.instance(instance_name,
 	                                   configuration_name=mConfig.name,
 	                                   node_count=1,
-	                                   display_name="My instance")
+	                                   display_name="<INSTANCE_NAME>")
 	operation = instance.create()
 	# This will wait until the instance is created before moving on
 	operation.result()

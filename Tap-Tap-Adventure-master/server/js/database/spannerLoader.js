@@ -7,8 +7,6 @@ module.exports = Loader = cls.Class.extend({
 	init: function(Database) {
 		var self = this;
 
-		self.projectId = projectId;
-
 		self.database = Database;
 	},
 
