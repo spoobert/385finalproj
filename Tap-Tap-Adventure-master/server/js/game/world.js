@@ -3,7 +3,7 @@
 var cls = require('../lib/class'),
     config = require('../../config.json'),
     Player = require('./entity/character/player/player'),
-    Map = require('../map/map'),
+    GameMap = require('../map/map'),
     _ = require('underscore'),
     Messages = require('../network/messages'),
     Utils = require('../util/utils'),
@@ -107,7 +107,7 @@ module.exports = World = cls.Class.extend({
          * whatever new map we have created server sided. Cleaner and nicer.
          */
 
-        self.map = new mMap(self);
+        self.map = new GameMap(self);
         self.map.isReady(function() {
             self.loadGroups();
 

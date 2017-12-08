@@ -21,61 +21,42 @@ module.exports = GoogleSpanner = cls.Class.extend({
 			projectId: projectId
 		});
 
-		self.instance = self.spanner.instance(instanceId);
-		self.database = self.instance.database(databaseId);
+		self.instanceId = instanceId;
+		self.databaseId = databaseId;
 
-		self.loader = null;
+		self.instance = self.spanner.instance(self.instanceId);
+		self.database = self.instance.database(self.databaseId);
 
-		self.testConnection(true, false);
+		self.instance.exists().then(function(data) {
+			self.database.exists().then(function(data) {
+				log.info('[GoogleSpanner] Connection to database was successful.');
 
-		self.loadCreator();
-		self.loadCallbacks();
+				self.loader = null;
 
-	},
-
-	testConnection: function(usingDB, forceCallbacks) {
-		var self = this;
-
-		const query = {
-			sql: 'SELECT 1'
-		};
-
-		self.database.run(query).then(function(results) {
-			// Results[0] should be the number of rows?
-			exists = results[0];
-
-			if(exists === 0)
-				log.info('[GoogleSpanner] Test connection to database: ' + self.databaseId + ' successful.');
+				self.loadCreator();
+				self.loadCallbacks();
+			}).catch(function(err) {
+				if(err.code === 5)
+				{
+					log.error("[GoogleSpanner] Python setup script has not been run. Please run script to setup Database.");
+					return;
+				}
+			});
+		}).catch(function(err) {
+			if(err.code === 5)
+			{
+				log.error("[GoogleSpanner] Python setup script has not been run. Please run script to setup Database.");
+				return;
+			}
 		});
-
-/*
-		self.connection = mysql.createConnection({
-			host: self.host,
-			port: self.port,
-			user: self.user,
-			password: self.password,
-			database: usingDB ? self.database : null
-		});
-*/
-		if (forceCallbacks)
-			self.loadCallbacks();
 	},
 
 	loadCallbacks: function() {
 		var self = this;
 
-		self.connection.connect(function(err) {
-			if (err) {
-				log.info('[GoogleSpanner] No database found...');
-				//self.testConnection(false, false);
-				self.loadDatabases();
-				return;
-			}
-
-			self.creator.createTables();
-			log.info('[GoogleSpanner] Successfully established connection to the GoogleSpanner database!');
-			self.loader = new Loader(self.database);
-		});
+		self.creator.createTables();
+		log.info('[GoogleSpanner] Successfully established connection to the GoogleSpanner database!');
+		self.loader = new Loader(self.database);
 /*
 		self.connection.on('error', function(error) {
 			log.error('MySQL database disconnected.');
